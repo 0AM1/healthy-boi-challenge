@@ -6,8 +6,9 @@
     <title>Healthy Boi Challenge Calendar</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js"></script>
+    <script type="module" src="script.js" defer></script>
 </head>
 <body>
     <div class="sidebar">
@@ -50,24 +51,5 @@
             <p id="streakCount"></p>
         </div>
     </div>
-    <script src="script.js"></script>
-
-    <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-  import { getFirestore } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyCoFnRRTWN9wiULuTaYf4UcM62dpDgNGyM",
-    authDomain: "healthy-boi-11eb8.firebaseapp.com",
-    projectId: "healthy-boi-11eb8",
-    storageBucket: "healthy-boi-11eb8.firebasestorage.app",
-    messagingSenderId: "296111243027",
-    appId: "1:296111243027:web:bfd16a419370edb3b5a4e6",
-    measurementId: "G-FZTFK24XQ8"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-</script>
 </body>
 </html>

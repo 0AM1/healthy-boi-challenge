@@ -1,3 +1,22 @@
+// Import Firebase modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+// Firebase configuration (inline for now, secure later)
+const firebaseConfig = {
+    apiKey: "AIzaSyCoFnRRTWN9wiULuTaYf4UcM62dpDgNGyM",
+    authDomain: "healthy-boi-11eb8.firebaseapp.com",
+    projectId: "healthy-boi-11eb8",
+    storageBucket: "healthy-boi-11eb8.firebasestorage.app",
+    messagingSenderId: "296111243027",
+    appId: "1:296111243027:web:bfd16a419370edb3b5a4e6",
+    measurementId: "G-FZTFK24XQ8"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 // Challenge tasks by week with varied diet and exercise schedule
 const challengeTasks = {
     'week1-2': {
@@ -69,7 +88,7 @@ function initCalendar() {
 
     // Navigation buttons
     document.getElementById('prevMonth').addEventListener('click', () => {
-        if (currentMonth > 7 || currentYear > 2025) { // Limit to August 2025
+        if (currentMonth > 7 || currentYear > 2025) {
             currentMonth--;
             if (currentMonth < 0) {
                 currentMonth = 11;
@@ -80,7 +99,7 @@ function initCalendar() {
     });
 
     document.getElementById('nextMonth').addEventListener('click', () => {
-        if (currentMonth < 8 || currentYear < 2025) { // Limit to September 2025
+        if (currentMonth < 8 || currentYear < 2025) {
             currentMonth++;
             if (currentMonth > 11) {
                 currentMonth = 0;
@@ -90,9 +109,17 @@ function initCalendar() {
         }
     });
 
-    // Modal close button
-    document.querySelector('.close').addEventListener('click', () => {
-        document.getElementById('taskModal').style.display = 'none';
+    // Modal close buttons
+    document.querySelectorAll('.close').forEach(closeBtn => {
+        closeBtn.addEventListener('click', () => {
+            document.getElementById('taskModal').style.display = 'none';
+            document.getElementById('streakModal').style.display = 'none';
+        });
+    });
+
+    // Achievement buttons
+    document.querySelectorAll('.achievement').forEach(btn => {
+        btn.addEventListener('click', () => showStreakModal(btn.dataset.category));
     });
 }
 
@@ -102,8 +129,8 @@ function updateCalendar(month, year) {
     const monthYear = document.getElementById('monthYear');
     calendar.innerHTML = '';
 
-    const startDate = new Date('2025-08-05'); // Day 1 of challenge
-    const endDate = new Date('2025-09-29'); // End of 8 weeks
+    const startDate = new Date('2025-08-06'); // Day 1 of challenge
+    const endDate = new Date('2025-09-30'); // End of 8 weeks
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     monthYear.textContent = `${months[month]} ${year}`;
 
@@ -138,7 +165,7 @@ function updateCalendar(month, year) {
         const week = getWeek(dayIndex);
         const dayDiv = document.createElement('div');
         dayDiv.className = 'day';
-        if (!week || date > endDate) {
+        if (!week || date > endDate || date < startDate) {
             dayDiv.className += ' disabled';
         }
         dayDiv.textContent = day;
@@ -146,7 +173,7 @@ function updateCalendar(month, year) {
         dayDiv.dataset.week = week || '';
         dayDiv.dataset.date = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         dayDiv.dataset.dayIndex = dayIndex;
-        if (week && date <= endDate) {
+        if (week && date <= endDate && date >= startDate) {
             dayDiv.addEventListener('click', () => showModal(dayDiv));
         }
         calendar.appendChild(dayDiv);
@@ -162,12 +189,12 @@ function getWeek(dayIndex) {
 }
 
 // Show modal with tasks
-function showModal(dayDiv) {
+async function showModal(dayDiv) {
     const day = dayDiv.dataset.day;
     const week = dayDiv.dataset.week;
     const date = dayDiv.dataset.date;
     const dayIndex = parseInt(dayDiv.dataset.dayIndex);
-    if (!week) return; // No tasks for this day
+    if (!week) return;
 
     const modal = document.getElementById('taskModal');
     const modalTitle = document.getElementById('modalTitle');
@@ -177,19 +204,23 @@ function showModal(dayDiv) {
     taskList.innerHTML = '';
 
     const tasks = challengeTasks[week];
-    Object.keys(tasks).forEach(category => {
+    for (const category of Object.keys(tasks)) {
         const categoryDiv = document.createElement('div');
         categoryDiv.innerHTML = `<h3>${category.charAt(0).toUpperCase() + category.slice(1)}</h3>`;
         let hasTasks = false;
 
-        tasks[category].forEach(task => {
+        for (const task of tasks[category]) {
             const taskText = typeof task === 'string' ? task : task.task;
             const shouldDisplay = typeof task === 'string' ? true : task.day.includes(dayIndex % 14 === 0 ? 14 : dayIndex % 14);
 
             if (shouldDisplay) {
                 hasTasks = true;
                 const taskId = `task-${date}-${category}-${taskText.replace(/\s+/g, '-')}`;
-                const checked = localStorage.getItem(taskId) === 'true' ? 'checked' : '';
+                // Fetch checked state from Firestore
+                const docRef = db.collection('tasks').doc('user123').collection(date).doc(taskId);
+                const doc = await docRef.get();
+                const checked = doc.exists && doc.data().checked ? 'checked' : '';
+                
                 const taskItem = document.createElement('div');
                 taskItem.className = 'task-item';
                 taskItem.innerHTML = `
@@ -198,24 +229,73 @@ function showModal(dayDiv) {
                 `;
                 categoryDiv.appendChild(taskItem);
                 const checkbox = document.getElementById(taskId);
-                if (checkbox) {
-                    checkbox.addEventListener('change', (e) => {
-                        localStorage.setItem(taskId, e.target.checked);
-                    });
-                }
+                checkbox.addEventListener('change', async (e) => {
+                    await docRef.set({ checked: e.target.checked }, { merge: true });
+                });
             }
-        });
+        }
 
         if (hasTasks) {
             taskList.appendChild(categoryDiv);
         }
-    });
+    }
 
     if (taskList.children.length === 0) {
         taskList.innerHTML = '<p>No tasks for this day.</p>';
     }
     
     modal.style.display = 'flex';
+}
+
+// Show streak modal
+async function showStreakModal(category) {
+    const streakModal = document.getElementById('streakModal');
+    const streakTitle = document.getElementById('streakTitle');
+    const streakCount = document.getElementById('streakCount');
+    
+    streakTitle.textContent = `${category.charAt(0).toUpperCase() + category.slice(1)} Streak`;
+    streakCount.textContent = 'Calculating...';
+
+    const startDate = new Date('2025-08-06');
+    const today = new Date();
+    let streak = 0;
+    let currentDate = new Date(startDate);
+
+    while (currentDate <= today && currentDate <= new Date('2025-09-30')) {
+        const dateStr = currentDate.toISOString().split('T')[0];
+        const dayIndex = Math.floor((currentDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+        const week = getWeek(dayIndex);
+        if (!week) break;
+
+        let tasksToCheck = [];
+        if (category === 'coffee') tasksToCheck = ['No coffee'];
+        else if (category === 'booze') tasksToCheck = ['No alcohol'];
+        else if (category === 'sports') tasksToCheck = challengeTasks[week].exercise.map(t => typeof t === 'string' ? t : t.task);
+        else if (category === 'food') tasksToCheck = challengeTasks[week].diet.filter(t => typeof t === 'string' ? !['No alcohol', 'No coffee'].includes(t) : true).map(t => typeof t === 'string' ? t : t.task);
+        else if (category === 'sleep') tasksToCheck = challengeTasks[week].sleep;
+
+        let allChecked = true;
+        for (const task of tasksToCheck) {
+            if (category === 'sports' || category === 'food') {
+                const shouldDisplay = challengeTasks[week][category].some(t => (typeof t === 'string' ? t === task : t.task === task && t.day.includes(dayIndex % 14 === 0 ? 14 : dayIndex % 14)));
+                if (!shouldDisplay) continue;
+            }
+            const taskId = `task-${dateStr}-${category === 'sports' ? 'exercise' : category}-${task.replace(/\s+/g, '-')}`;
+            const docRef = db.collection('tasks').doc('user123').collection(dateStr).doc(taskId);
+            const doc = await docRef.get();
+            if (!doc.exists || !doc.data().checked) {
+                allChecked = false;
+                break;
+            }
+        }
+
+        if (!allChecked) break;
+        streak++;
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    streakCount.textContent = `${streak} day${streak === 1 ? '' : 's'}`;
+    streakModal.style.display = 'flex';
 }
 
 // Initialize on page load
