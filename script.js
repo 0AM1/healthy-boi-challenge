@@ -217,6 +217,34 @@ async function showModal(dayDiv) {
                 hasTasks = true;
                 const taskId = `task-${date}-${category}-${taskText.replace(/\s+/g, '-')}`;
                 // Fetch checked state from Firestore using modular syntax
+             async function showModal(dayDiv) {
+    const day = dayDiv.dataset.day;
+    const week = dayDiv.dataset.week;
+    const date = dayDiv.dataset.date;
+    const dayIndex = parseInt(dayDiv.dataset.dayIndex);
+    if (!week) return;
+
+    const modal = document.getElementById('taskModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const taskList = document.getElementById('taskList');
+    
+    modalTitle.textContent = `Day ${day} Tasks (${date})`;
+    taskList.innerHTML = '';
+
+    const tasks = challengeTasks[week];
+    for (const category of Object.keys(tasks)) {
+        const categoryDiv = document.createElement('div');
+        categoryDiv.innerHTML = `<h3>${category.charAt(0).toUpperCase() + category.slice(1)}</h3>`;
+        let hasTasks = false;
+
+        for (const task of tasks[category]) {
+            const taskText = typeof task === 'string' ? task : task.task;
+            const shouldDisplay = typeof task === 'string' ? true : task.day.includes(dayIndex % 14 === 0 ? 14 : dayIndex % 14);
+
+            if (shouldDisplay) {
+                hasTasks = true;
+                const taskId = `task-${date}-${category}-${taskText.replace(/\s+/g, '-')}`;
+                // Fetch checked state from Firestore using modular syntax
                 const taskDocRef = doc(db, 'tasks', 'boi123', date, taskId);
                 const taskDocSnap = await getDoc(taskDocRef);
                 const checked = taskDocSnap.exists() && taskDocSnap.data().checked ? 'checked' : '';
@@ -301,4 +329,5 @@ async function showStreakModal(category) {
 // Initialize on page load
 
 document.addEventListener('DOMContentLoaded', initCalendar);
+
 
