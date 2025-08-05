@@ -216,10 +216,10 @@ async function showModal(dayDiv) {
             if (shouldDisplay) {
                 hasTasks = true;
                 const taskId = `task-${date}-${category}-${taskText.replace(/\s+/g, '-')}`;
-                // Fetch checked state from Firestore
-               const docRef = doc(db, 'tasks', 'user123', date, taskId);
-                const docSnap = await getDoc(docRef);
-                const checked = docSnap.exists() && docSnap.data().checked ? 'checked' : '';
+                // Fetch checked state from Firestore using modular syntax
+                const taskDocRef = doc(db, 'tasks', 'boi123', date, taskId);
+                const taskDocSnap = await getDoc(taskDocRef);
+                const checked = taskDocSnap.exists() && taskDocSnap.data().checked ? 'checked' : '';
                 
                 const taskItem = document.createElement('div');
                 taskItem.className = 'task-item';
@@ -230,7 +230,7 @@ async function showModal(dayDiv) {
                 categoryDiv.appendChild(taskItem);
                 const checkbox = document.getElementById(taskId);
                 checkbox.addEventListener('change', async (e) => {
-                    await setDoc(docRef, { checked: e.target.checked }, { merge: true });
+                    await setDoc(taskDocRef, { checked: e.target.checked }, { merge: true });
                 });
             }
         }
@@ -301,3 +301,4 @@ async function showStreakModal(category) {
 // Initialize on page load
 
 document.addEventListener('DOMContentLoaded', initCalendar);
+
