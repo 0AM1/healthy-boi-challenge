@@ -69,7 +69,7 @@ function initCalendar() {
 
     // Navigation buttons
     document.getElementById('prevMonth').addEventListener('click', () => {
-        if (currentMonth > 7) { // Limit to August 2025
+        if (currentMonth > 7 || currentYear > 2025) { // Limit to August 2025
             currentMonth--;
             if (currentMonth < 0) {
                 currentMonth = 11;
@@ -80,7 +80,7 @@ function initCalendar() {
     });
 
     document.getElementById('nextMonth').addEventListener('click', () => {
-        if (currentMonth < 8) { // Limit to September 2025
+        if (currentMonth < 8 || currentYear < 2025) { // Limit to September 2025
             currentMonth++;
             if (currentMonth > 11) {
                 currentMonth = 0;
@@ -103,6 +103,7 @@ function updateCalendar(month, year) {
     calendar.innerHTML = '';
 
     const startDate = new Date('2025-08-05'); // Day 1 of challenge
+    const endDate = new Date('2025-09-29'); // End of 8 weeks
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     monthYear.textContent = `${months[month]} ${year}`;
 
@@ -137,19 +138,24 @@ function updateCalendar(month, year) {
         const week = getWeek(dayIndex);
         const dayDiv = document.createElement('div');
         dayDiv.className = 'day';
+        if (!week || date > endDate) {
+            dayDiv.className += ' disabled';
+        }
         dayDiv.textContent = day;
         dayDiv.dataset.day = day;
-        dayDiv.dataset.week = week;
+        dayDiv.dataset.week = week || '';
         dayDiv.dataset.date = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         dayDiv.dataset.dayIndex = dayIndex;
-        dayDiv.addEventListener('click', () => showModal(dayDiv));
+        if (week && date <= endDate) {
+            dayDiv.addEventListener('click', () => showModal(dayDiv));
+        }
         calendar.appendChild(dayDiv);
     }
 }
 
 // Determine week range for tasks
 function getWeek(dayIndex) {
-    if (dayIndex < 1) return null; // Before challenge start
+    if (dayIndex < 1 || dayIndex > 56) return null; // Before or after 8-week challenge
     if (dayIndex <= 14) return 'week1-2';
     if (dayIndex <= 28) return 'week3-4';
     return 'week5-8';
@@ -161,7 +167,7 @@ function showModal(dayDiv) {
     const week = dayDiv.dataset.week;
     const date = dayDiv.dataset.date;
     const dayIndex = parseInt(dayDiv.dataset.dayIndex);
-    if (!week) return; // No tasks before challenge start
+    if (!week) return; // No tasks for this day
 
     const modal = document.getElementById('taskModal');
     const modalTitle = document.getElementById('modalTitle');
@@ -171,14 +177,17 @@ function showModal(dayDiv) {
     taskList.innerHTML = '';
 
     const tasks = challengeTasks[week];
-    for (const category in tasks) {
+    Object.keys(tasks).forEach(category => {
         const categoryDiv = document.createElement('div');
         categoryDiv.innerHTML = `<h3>${category.charAt(0).toUpperCase() + category.slice(1)}</h3>`;
+        let hasTasks = false;
+
         tasks[category].forEach(task => {
-            let taskText = typeof task === 'string' ? task : task.task;
-            let shouldDisplay = typeof task === 'string' ? true : task.day.includes(dayIndex % 14 === 0 ? 14 : dayIndex % 14);
-            
+            const taskText = typeof task === 'string' ? task : task.task;
+            const shouldDisplay = typeof task === 'string' ? true : task.day.includes(dayIndex % 14 === 0 ? 14 : dayIndex % 14);
+
             if (shouldDisplay) {
+                hasTasks = true;
                 const taskId = `task-${date}-${category}-${taskText.replace(/\s+/g, '-')}`;
                 const checked = localStorage.getItem(taskId) === 'true' ? 'checked' : '';
                 const taskItem = document.createElement('div');
@@ -188,14 +197,22 @@ function showModal(dayDiv) {
                     <label for="${taskId}">${taskText}</label>
                 `;
                 categoryDiv.appendChild(taskItem);
-                document.getElementById(taskId).addEventListener('change', (e) => {
-                    localStorage.setItem(taskId, e.target.checked);
-                });
+                const checkbox = document.getElementById(taskId);
+                if (checkbox) {
+                    checkbox.addEventListener('change', (e) => {
+                        localStorage.setItem(taskId, e.target.checked);
+                    });
+                }
             }
         });
-        if (categoryDiv.children.length > 1) { // Only add category if it has tasks
+
+        if (hasTasks) {
             taskList.appendChild(categoryDiv);
         }
+    });
+
+    if (taskList.children.length === 0) {
+        taskList.innerHTML = '<p>No tasks for this day.</p>';
     }
     
     modal.style.display = 'flex';
