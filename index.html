@@ -5,8 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Healthy Boi Challenge Calendar</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
 </head>
 <body>
+    <div class="sidebar">
+        <div class="achievement" data-category="coffee" title="Coffee Streak">
+            <i class="fas fa-coffee"></i>
+        </div>
+        <div class="achievement" data-category="booze" title="Booze Streak">
+            <i class="fas fa-wine-glass"></i>
+        </div>
+        <div class="achievement" data-category="sports" title="Sports Streak">
+            <i class="fas fa-running"></i>
+        </div>
+        <div class="achievement" data-category="food" title="Food Streak">
+            <i class="fas fa-utensils"></i>
+        </div>
+        <div class="achievement" data-category="sleep" title="Sleep Streak">
+            <i class="fas fa-bed"></i>
+        </div>
+    </div>
     <div class="container">
         <h1>Healthy Boi Challenge</h1>
         <div class="navigation">
@@ -23,6 +43,31 @@
             <div id="taskList"></div>
         </div>
     </div>
+    <div id="streakModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="streakTitle"></h2>
+            <p id="streakCount"></p>
+        </div>
+    </div>
     <script src="script.js"></script>
+
+    <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCoFnRRTWN9wiULuTaYf4UcM62dpDgNGyM",
+    authDomain: "healthy-boi-11eb8.firebaseapp.com",
+    projectId: "healthy-boi-11eb8",
+    storageBucket: "healthy-boi-11eb8.firebasestorage.app",
+    messagingSenderId: "296111243027",
+    appId: "1:296111243027:web:bfd16a419370edb3b5a4e6",
+    measurementId: "G-FZTFK24XQ8"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+</script>
 </body>
 </html>
