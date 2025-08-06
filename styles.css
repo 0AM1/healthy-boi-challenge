@@ -9,6 +9,8 @@ body {
     background: linear-gradient(135deg, #74ebd5, #acb6e5);
     min-height: 100vh;
     display: flex;
+    justify-content: center;
+    align-items: center;
     padding: 20px;
 }
 
@@ -49,7 +51,7 @@ body {
     width: 100%;
     text-align: center;
     padding: 20px;
-    margin-left: 80px;
+    margin: 0 auto;
 }
 
 h1 {
@@ -184,9 +186,37 @@ h1 {
 }
 
 @media (max-width: 600px) {
+    body {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .sidebar {
+        position: static;
+        flex-direction: row;
+        justify-content: center;
+        width: 100%;
+        padding: 10px 0;
+        gap: 10px;
+    }
+
+    .achievement {
+        width: 40px;
+        height: 40px;
+    }
+
+    .achievement i {
+        font-size: 1.2rem;
+    }
+
+    .container {
+        margin: 0;
+        padding: 10px;
+    }
+
     .day {
-        height: 60px;
-        font-size: 0.9rem;
+        height: 50px;
+        font-size: 0.8rem;
     }
 
     .modal-content {
@@ -205,23 +235,5 @@ h1 {
 
     #monthYear {
         font-size: 1.2rem;
-    }
-
-    .sidebar {
-        left: 10px;
-        top: 10px;
-    }
-
-    .achievement {
-        width: 40px;
-        height: 40px;
-    }
-
-    .achievement i {
-        font-size: 1.2rem;
-    }
-
-    .container {
-        margin-left: 60px;
     }
 }
