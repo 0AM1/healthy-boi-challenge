@@ -211,16 +211,21 @@ async function showModal(dayDiv) {
 
                 const taskItem = document.createElement('div');
                 taskItem.className = 'task-item';
-                taskItem.innerHTML = `
-                    <input type="checkbox" id="${taskId}" ${checked ? 'checked' : ''}>
-                    <label for="${taskId}">${taskText}</label>
-                `;
-                categoryDiv.appendChild(taskItem);
-
-                const checkbox = document.getElementById(taskId);
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = taskId;
+                checkbox.checked = checked;
                 checkbox.addEventListener('change', async (e) => {
                     await setDoc(taskDocRef, { checked: e.target.checked }, { merge: true });
                 });
+
+                const label = document.createElement('label');
+                label.htmlFor = taskId;
+                label.textContent = taskText;
+
+                taskItem.appendChild(checkbox);
+                taskItem.appendChild(label);
+                categoryDiv.appendChild(taskItem);
             }
         }
 
