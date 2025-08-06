@@ -1,3 +1,4 @@
+// Roi HaGever
 // Import Firebase modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
@@ -279,5 +280,6 @@ async function showStreakModal(category) {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', initCalendar);
+
 
 
