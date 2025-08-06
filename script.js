@@ -189,31 +189,7 @@ function getWeek(dayIndex) {
 }
 
 // Show modal with tasks
-async function showModal(dayDiv) {
-    const day = dayDiv.dataset.day;
-    const week = dayDiv.dataset.week;
-    const date = dayDiv.dataset.date;
-    const dayIndex = parseInt(dayDiv.dataset.dayIndex);
-    if (!week) return;
-
-    const modal = document.getElementById('taskModal');
-    const modalTitle = document.getElementById('modalTitle');
-    const taskList = document.getElementById('taskList');
-    
-    modalTitle.textContent = `Day ${day} Tasks (${date})`;
-    taskList.innerHTML = '';
-
-    const tasks = challengeTasks[week];
-    for (const category of Object.keys(tasks)) {
-        const categoryDiv = document.createElement('div');
-        categoryDiv.innerHTML = `<h3>${category.charAt(0).toUpperCase() + category.slice(1)}</h3>`;
-        let hasTasks = false;
-
-        for (const task of tasks[category]) {
-            const taskText = typeof task === 'string' ? task : task.task;
-            const shouldDisplay = typeof task === 'string' ? true : task.day.includes(dayIndex % 14 === 0 ? 14 : dayIndex % 14);
-
-                     if (shouldDisplay) {
+            if (shouldDisplay) {
                 hasTasks = true;
                 const taskId = `task-${date}-${category}-${taskText.replace(/\s+/g, '-')}`; // Consistent ID
                 const taskDocRef = doc(db, 'tasks', 'boi123', date, taskId);
@@ -270,7 +246,7 @@ async function showStreakModal(category) {
         const week = getWeek(dayIndex);
         if (!week) break;
 
-        let tasksToCheck = [];
+                let tasksToCheck = [];
         if (category === 'coffee') tasksToCheck = ['No coffee'].filter(t => challengeTasks[week].diet.includes(t));
         else if (category === 'booze') tasksToCheck = ['No alcohol'].filter(t => challengeTasks[week].diet.includes(t));
         else if (category === 'sports') tasksToCheck = challengeTasks[week].exercise.map(t => typeof t === 'string' ? t : t.task);
@@ -303,4 +279,5 @@ async function showStreakModal(category) {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', initCalendar);
+
 
