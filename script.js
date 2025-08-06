@@ -215,19 +215,18 @@ async function showModal(dayDiv) {
 
             if (shouldDisplay) {
                 hasTasks = true;
-                const taskId = `task-${date}-${category}-${taskText.replace(/\s+/g, '-')}-${Date.now()}`; // Unique ID
+                const taskId = `task-${date}-${category}-${taskText.replace(/\s+/g, '-')}`; // Removed Date.now() for consistency
                 const taskDocRef = doc(db, 'tasks', 'boi123', date, taskId);
                 const taskDocSnap = await getDoc(taskDocRef);
-                const checked = taskDocSnap.exists() && taskDocSnap.data().checked ? 'checked' : '';
+                const checked = taskDocSnap.exists() ? taskDocSnap.data().checked || false : false; // Default to false if no data
                 
                 const taskItem = document.createElement('div');
                 taskItem.className = 'task-item';
                 taskItem.innerHTML = `
-                    <input type="checkbox" id="${taskId}" ${checked}>
+                    <input type="checkbox" id="${taskId}" ${checked ? 'checked' : ''}>
                     <label for="${taskId}">${taskText}</label>
                 `;
                 categoryDiv.appendChild(taskItem);
-                // Use vanilla JS for event listener
                 setTimeout(() => {
                     const checkbox = document.getElementById(taskId);
                     if (checkbox) {
@@ -286,8 +285,8 @@ async function showStreakModal(category) {
             }
             const taskId = `task-${dateStr}-${category === 'sports' ? 'exercise' : category}-${task.replace(/\s+/g, '-')}`;
             const docRef = doc(db, 'tasks', 'boi123', dateStr, taskId);
-            const doc = await getDoc(docRef);
-            if (!doc.exists || !doc.data().checked) {
+            const docSnap = await getDoc(docRef);
+            if (!docSnap.exists() || !docSnap.data().checked) {
                 allChecked = false;
                 break;
             }
@@ -304,5 +303,3 @@ async function showStreakModal(category) {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', initCalendar);
-
-
