@@ -213,12 +213,12 @@ async function showModal(dayDiv) {
             const taskText = typeof task === 'string' ? task : task.task;
             const shouldDisplay = typeof task === 'string' ? true : task.day.includes(dayIndex % 14 === 0 ? 14 : dayIndex % 14);
 
-            if (shouldDisplay) {
+                     if (shouldDisplay) {
                 hasTasks = true;
-                const taskId = `task-${date}-${category}-${taskText.replace(/\s+/g, '-')}`; // Removed Date.now() for consistency
+                const taskId = `task-${date}-${category}-${taskText.replace(/\s+/g, '-')}`; // Consistent ID
                 const taskDocRef = doc(db, 'tasks', 'boi123', date, taskId);
                 const taskDocSnap = await getDoc(taskDocRef);
-                const checked = taskDocSnap.exists() ? taskDocSnap.data().checked || false : false; // Default to false if no data
+                const checked = taskDocSnap.exists() ? (taskDocSnap.data().checked || false) : false; // Ensure default false
                 
                 const taskItem = document.createElement('div');
                 taskItem.className = 'task-item';
@@ -271,8 +271,8 @@ async function showStreakModal(category) {
         if (!week) break;
 
         let tasksToCheck = [];
-        if (category === 'coffee') tasksToCheck = ['No coffee'];
-        else if (category === 'booze') tasksToCheck = ['No alcohol'];
+        if (category === 'coffee') tasksToCheck = ['No coffee'].filter(t => challengeTasks[week].diet.includes(t));
+        else if (category === 'booze') tasksToCheck = ['No alcohol'].filter(t => challengeTasks[week].diet.includes(t));
         else if (category === 'sports') tasksToCheck = challengeTasks[week].exercise.map(t => typeof t === 'string' ? t : t.task);
         else if (category === 'food') tasksToCheck = challengeTasks[week].diet.filter(t => typeof t === 'string' ? !['No alcohol', 'No coffee'].includes(t) : true).map(t => typeof t === 'string' ? t : t.task);
         else if (category === 'sleep') tasksToCheck = challengeTasks[week].sleep;
@@ -303,3 +303,4 @@ async function showStreakModal(category) {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', initCalendar);
+
