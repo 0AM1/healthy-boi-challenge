@@ -113,6 +113,14 @@ function initCalendar() {
     document.querySelectorAll('.achievement').forEach(btn => {
         btn.addEventListener('click', () => showStreakModal(btn.dataset.category));
     });
+
+    // Close streak modal on outside click
+    const streakModal = document.getElementById('streakModal');
+    streakModal.addEventListener('click', (e) => {
+        if (e.target === streakModal) {
+            streakModal.style.display = 'none';
+        }
+    });
 }
 
 function updateCalendar(month, year) {
@@ -122,6 +130,7 @@ function updateCalendar(month, year) {
 
     const startDate = new Date('2025-08-06');
     const endDate = new Date('2025-09-30');
+    const today = new Date();
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     monthYear.textContent = `${months[month]} ${year}`;
 
@@ -159,7 +168,7 @@ function updateCalendar(month, year) {
         dayDiv.dataset.date = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         dayDiv.dataset.dayIndex = dayIndex;
         if (week && date <= endDate && date >= startDate) {
-            dayDiv.addEventListener('click', () => showModal(dayDiv));
+            dayDiv.addEventListener('click', () => showModal(dayDiv, date < today));
         }
         calendar.appendChild(dayDiv);
     }
@@ -172,7 +181,7 @@ function getWeek(dayIndex) {
     return 'week5-8';
 }
 
-async function showModal(dayDiv) {
+async function showModal(dayDiv, isPastDay = false) {
     const modal = document.getElementById('taskModal');
     const modalTitle = document.getElementById('modalTitle');
     const taskList = document.getElementById('taskList');
@@ -215,9 +224,12 @@ async function showModal(dayDiv) {
                 checkbox.type = 'checkbox';
                 checkbox.id = taskId;
                 checkbox.checked = checked;
-                checkbox.addEventListener('change', async (e) => {
-                    await setDoc(taskDocRef, { checked: e.target.checked }, { merge: true });
-                });
+                checkbox.disabled = isPastDay; // Disable checkboxes for past days
+                if (!isPastDay) {
+                    checkbox.addEventListener('change', async (e) => {
+                        await setDoc(taskDocRef, { checked: e.target.checked }, { merge: true });
+                    });
+                }
 
                 const label = document.createElement('label');
                 label.htmlFor = taskId;
@@ -280,7 +292,7 @@ async function showStreakModal(category) {
 
         let allChecked = false;
         for (const task of tasksToCheck) {
-            const shouldDisplay = challengeTasks[week][category === 'food' || category === 'sports' ? (category === 'food' ? 'diet' : 'exercise') : category]
+            const shouldDisplay = challengeTasks[week][category === 'food' ? 'diet' : category === 'sports' ? 'exercise' : category === 'coffee' || category === 'booze' ? 'diet' : category]
                 .some(t => {
                     const taskText = typeof t === 'string' ? t : t.task;
                     if (taskText !== task) return false;
@@ -289,12 +301,12 @@ async function showStreakModal(category) {
 
             if (!shouldDisplay) continue;
 
-            const taskId = `task-${dateStr}-${category === 'sports' ? 'exercise' : category}-${task.replace(/\s+/g, '-')}`;
+            const taskId = `task-${dateStr}-${category === 'sports' ? 'exercise' : category === 'coffee' || category === 'booze' ? 'diet' : category}-${task.replace(/\s+/g, '-')}`;
             const docRef = doc(db, 'tasks', 'boi123', dateStr, taskId);
             const docSnap = await getDoc(docRef);
             if (docSnap.exists() && docSnap.data().checked) {
                 allChecked = true;
-                break; // For food, any checked task counts
+                break; // For food, coffee, booze: any checked task counts
             }
         }
 
