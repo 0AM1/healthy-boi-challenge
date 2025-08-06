@@ -200,13 +200,13 @@ async function showModal(dayDiv) {
     const modalTitle = document.getElementById('modalTitle');
     const taskList = document.getElementById('taskList');
     
-    modalTitle.textContent = `Day ${day} Tasks (${date})`;
+    modalTitle.textContent = Day ${day} Tasks (${date});
     taskList.innerHTML = '';
 
     const tasks = challengeTasks[week];
     for (const category of Object.keys(tasks)) {
         const categoryDiv = document.createElement('div');
-        categoryDiv.innerHTML = `<h3>${category.charAt(0).toUpperCase() + category.slice(1)}</h3>`;
+        categoryDiv.innerHTML = <h3>${category.charAt(0).toUpperCase() + category.slice(1)}</h3>;
         let hasTasks = false;
 
         for (const task of tasks[category]) {
@@ -215,7 +215,7 @@ async function showModal(dayDiv) {
 
             if (shouldDisplay) {
                 hasTasks = true;
-                const taskId = `task-${date}-${category}-${taskText.replace(/\s+/g, '-')}`;
+                const taskId = task-${date}-${category}-${taskText.replace(/\s+/g, '-')}-${Date.now()}; // Add timestamp for uniqueness
                 const taskDocRef = doc(db, 'tasks', 'boi123', date, taskId);
                 const taskDocSnap = await getDoc(taskDocRef);
                 const checked = taskDocSnap.exists() && taskDocSnap.data().checked ? 'checked' : '';
@@ -227,10 +227,15 @@ async function showModal(dayDiv) {
                     <label for="${taskId}">${taskText}</label>
                 `;
                 categoryDiv.appendChild(taskItem);
-                const checkbox = document.getElementById(taskId);
-                checkbox.addEventListener('change', async (e) => {
-                    await setDoc(taskDocRef, { checked: e.target.checked }, { merge: true });
-                });
+                // Use setTimeout to ensure DOM is ready
+                setTimeout(() => {
+                    const checkbox = document.getElementById(taskId);
+                    if (checkbox) {
+                        checkbox.addEventListener('change', async (e) => {
+                            await setDoc(taskDocRef, { checked: e.target.checked }, { merge: true });
+                        });
+                    }
+                }, 0);
             }
         }
 
@@ -299,3 +304,4 @@ async function showStreakModal(category) {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', initCalendar);
+
